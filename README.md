@@ -7,7 +7,7 @@ ___
 > >> **Html, css, React.js, Axios**
 > 
 > >Backend: 
-> >> **Nest.js, TypeORM, Mysql, JWT**
+> >> **Nest.js, MongoDB, JWT**
 ___
 + ### I don't wanna create beautiful design because i am a Backend developer and dont want to lose a lot of time))
 ___
