@@ -1,5 +1,16 @@
-import {BadRequestException, Body, Controller, Get, HttpException, Param, Post, Res} from '@nestjs/common';
-import {Response} from 'express'
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  Param,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException
+} from '@nestjs/common';
+import {Response, Request} from 'express'
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -51,11 +62,44 @@ export class UsersController {
       message: 'success',
     };
   }
-  @Post('sub')
-  async subscribe(@Body('sub_id') sub_id: string, @Body('fol_id') fol_id: string) {
+  @Get('subscribe/:fol_id')
+  async subscribe(@Req() req: Request, @Param('fol_id') fol_id: string) {
+    const cookie = await req.cookies['jwt'];
+    const data = await this.jwtService.verifyAsync(cookie);
+    if(!data) {
+      throw new UnauthorizedException();
+    }
+    const sub_id = data.id
+
     const result = await this.usersService.HandleSubscribe(sub_id, fol_id);
+    if(result.success == false) {
+      return result
+    }
     return {
       message: `${result.sub} SUCCESSFULLY SUBSCRIBED TO ${result.fol}`
+    }
+  }
+  @Get('unsubscribe/:fol_id')
+  async unSubscribe(@Req() req: Request, @Param('fol_id') fol_id: string) {
+    const cookie = await req.cookies['jwt'];
+    if(cookie) {
+      return {
+        success: false,
+        message: "Token expired"
+      }
+    }
+    const data = await this.jwtService.verifyAsync(cookie);
+    if(!data) {
+      throw new UnauthorizedException();
+    }
+    const sub_id = data.id
+
+    const result = await this.usersService.HandleUnsubscribe(sub_id, fol_id);
+    if(result.success == false) {
+      return result;
+    }
+    return {
+      message: `${result.sub} SUCCESSFULLY UNSUBSCRIBED TO ${result.fol}`
     }
   }
 }

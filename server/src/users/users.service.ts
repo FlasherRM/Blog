@@ -26,6 +26,13 @@ export class UsersService {
         const sub = await this.userModel.findById(subscriber_id);
         const fol = await this.userModel.findById(followed_id);
 
+        if(fol.subscribers.includes(subscriber_id) && sub.follows.includes(followed_id) || sub.follows.includes(followed_id) || fol.subscribers.includes(subscriber_id)) {
+            return {
+                success: false,
+                message: "You are already registered to him"
+            }
+        }
+
         fol.subscribers.push(subscriber_id)
         sub.follows.push(followed_id)
 
@@ -34,6 +41,30 @@ export class UsersService {
         fol.save()
 
         return {
+            fol: fol.name,
+            sub: sub.name
+        }
+    }
+    async HandleUnsubscribe(subscriber_id, followed_id) {
+        const sub = await this.userModel.findById(subscriber_id);
+        const fol = await this.userModel.findById(followed_id);
+
+        if(!fol.subscribers.includes(subscriber_id) && !sub.follows.includes(followed_id)) {
+            return {
+                success: false,
+                message: "YOU WEREN'T SUBSCRIBED HIM"
+            }
+        }
+
+
+        fol.subscribers.splice(fol.subscribers.indexOf(subscriber_id), 1);
+        sub.follows.splice(sub.follows.indexOf(followed_id), 1);
+
+        fol.save()
+        sub.save()
+
+        return {
+            success: true,
             fol: fol.name,
             sub: sub.name
         }
